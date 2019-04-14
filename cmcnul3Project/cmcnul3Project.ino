@@ -229,104 +229,43 @@ void getDateFromLCD(int *month, int *day, int *year){
 			if(buttonPressed(upButtonPin, &upButtonState)){
 				int max;
 				*year++;
-				if(*year < 0){
+				if(*year > 99){
 					*year = 0;
 				}
-				else{
-
-				}
-				if(!validDate(*month, *day, year, &max)){
-					// check if year is inside of range
-					if(*year > 2099){
-						*year = 2000;
-					}
+				// add offset to year
+				*year += 2000;
+				if(!validDate(*month, *day, year, &max)){	
 					// check if day is on leap year
 					if(*day > max){
 						// set day to the 29th on leap year
 						*day = max;
 					}
 				}
+				// remove offset from year
 				*year -= 2000;
 			}
 			if(buttonPressed(downButtonPin, &downButtonState)){
-			
+				int max;
+				*year--;
+				if(*year < 0){
+					*year = 99;
+				}
+				// add offset to year
+				*year += 2000;
+				if(!validDate(*month, *day, year, &max)){
+					// check if day is on leap year
+					if(*day > max){
+						// set day to the 29th on leap year
+						*day = max;
+					}
+				}
+				// remove offset from year
+				*year -= 2000;
 			}
 		}
 		snprintf(buffer, 100, format, *month, *day, *year);
 		lcd.print(buffer);
 	}
-	
-
-
-
-
-
-
-  *month = tensPlace * 10 + onesPlace; 
-  tensPlace = 0;
-  onesPlace = 0;
-  i++;
-  while(i < 5){
-    lcd.setCursor(i, 1);
-    if(buttonPressed(enterButtonPin, &enterButtonState)){
-      i++;
-    }
-    else{
-      if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 3 && tensPlace + 1  <= 3){
-          tensPlace++;
-          lcd.write('0' + tensPlace);
-        }
-        if(i == 4 && (tensPlace * 10 + (onesPlace + 1)) <= 31){
-          onesPlace++;
-          lcd.write('0' + onesPlace);
-        }
-      }
-      if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 3 && tensPlace - 1 >= 0){
-          tensPlace--;
-          lcd.write('0' + tensPlace);
-        }
-        if(i == 4 && onesPlace - 1 >= 0){
-          onesPlace--;
-          lcd.write('0' + onesPlace);
-        }
-      }
-    }
-  }
-  *day = tensPlace * 10 + onesPlace; 
-  tensPlace = 0;
-  onesPlace = 0;
-  i++; 
-  while(i < 8){
-    lcd.setCursor(i, 1);
-    if(buttonPressed(enterButtonPin, &enterButtonState)){
-      i++;
-    }
-    else{
-      if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 6 && tensPlace + 1  <= 9){
-          tensPlace++;
-          lcd.write('0' + tensPlace);
-        }
-        if(i == 7 && onesPlace + 1 <= 9){
-          onesPlace++;
-          lcd.write('0' + onesPlace);
-        }
-      }
-      if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 6 && tensPlace - 1 >= 0){
-          tensPlace--;
-          lcd.write('0' + tensPlace);
-        }
-        if(i == 7 && onesPlace - 1 >= 0){
-          onesPlace--;
-          lcd.write('0' + onesPlace);
-        }
-      }
-    }
-  }
-  *year = tensPlace * 10 + onesPlace;
 }
 
 void getScheduleFromLCD(int *days, int *hours){
