@@ -47,146 +47,224 @@ int buttonPressed(int buttonPin, int *buttonState){
 void getTimeFromLCD(int *hour, int *minutes, int *seconds){
   if(!hour || !minutes || !seconds){ return; }
   lcd.clear();
-  lcd.print("00:00:00");
-  int tens_place = 0, ones_place = 0;
-  int i = 0;
-  while(i < 2){
-    lcd.setCursor(i, 0);
-    if(buttonPressed(enterButtonPin, &enterButtonState)){
-      i++;
-    }
-    else{
-      if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 0 && tens_place + 1 <= 2){
-          tens_place++;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 1 && (ones_place + 1) <= 9
-                  && (tens_place * 10 + (ones_place + 1)) <= 23){
-            ones_place++;
-            lcd.write('0' + ones_place);
-        }
-      }
-      if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 0 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 1 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
-        }
-      }
-    }
-  }
-  *hour = tens_place * 10 + ones_place; 
-  tens_place = 0;
-  ones_place = 0;
-  i++;
-  while(i < 5){
-    lcd.setCursor(i, 0);
-    if(buttonPressed(enterButtonPin, &enterButtonState)){
-      i++;
-    }
-    else{
-      if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 3 && tens_place + 1  <= 5){
-          tens_place++;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 4 && ones_place + 1 <= 9){
-          ones_place++;
-          lcd.write('0' + ones_place);
-        }
-      }
-      if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 3 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 4 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
-        }
-      }
-    }
-  }
-  *minutes = tens_place * 10 + ones_place; 
-  tens_place = 0;
-  ones_place = 0;
-  i++; 
-  while(i < 8){
-    lcd.setCursor(i, 0);
-    if(buttonPressed(enterButtonPin, &enterButtonState)){
-      i++;
-    }
-    else{
-      if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 6 && tens_place + 1  <= 5){
-          tens_place++;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 7 && ones_place + 1 <= 9){
-          ones_place++;
-          lcd.write('0' + ones_place);
-        }
-      }
-      if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 6 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 7 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
-        }
-      }
-    }
-  }
-  *seconds = tens_place * 10 + ones_place;
+	char buffer[100];
+	char *format = "00:00:00";
+  lcd.print(format);
+	lcd.setCursor(0,0);
+	int complete = 0;
+	while(!complete){
+		char *format = "%02d:00:00";
+		if(buttonPressed(enterButtonPin, &enterButtonState)){
+			complete = 1;
+		}
+		else{
+			if(buttonPressed(upButtonPin, &upButtonState)){
+				if(*hour + 1 <= 23){
+					*hour++;
+				}
+			}
+			if(buttonPressed(downButtonPin, &downButtonState)){
+				if(*hour - 1 >= 0){
+					*hour--;
+				}
+			}
+		}
+		snprintf(buffer, 100, format, *hour);
+		lcd.print(buffer);
+	}
+	complete = 0;
+	lcd.setCursor(3,0);
+	while(!complete){
+		char *format = "%02d:%02d:00";
+		if(buttonPressed(enterButtonPin, &enterButtonState)){
+			complete = 1;
+		}
+		else{
+			if(buttonPressed(upButtonPin, &upButtonState)){
+				if(*minutes + 1 <= 59){
+					*minutes++;
+				}
+			}
+			if(buttonPressed(downButtonPin, &downButtonState)){
+				if(*minutes - 1 >= 0){
+					*minutes--;
+				}
+			}
+		}
+		snprintf(buffer, 100, format, *hour, *minutes);
+		lcd.print(buffer);
+	}
+	complete = 1;
+	lcd.setCursor(6,0);
+	while(!complete){
+		char *format = "%02d:%02d:%02d";
+		if(buttonPressed(enterButtonPin, &enterButtonState)){
+			complete = 1;
+		}
+		else{
+			if(buttonPressed(upButtonPin, &upButtonState)){
+				if(*seconds + 1 <= 59){
+					*seconds++;
+				}
+			}
+			if(buttonPressed(downButtonPin, &downButtonState)){
+				if(*seconds - 1 >= 0){
+					*seconds--;
+				}
+			}
+		}
+		snprintf(buffer, 100, format, *hour, *minutes, *seconds);
+		lcd.print(buffer);
+	}
 }
+
+int validDate(int month, int day, int *year, int *max){
+	switch(month){
+		case 1: case 3: case 5: case 7:
+		case 8: case 10: case 12:{
+			if(max){ *max = 31; } 
+			if(day >= 1 && day <= 31){
+				return 1;
+			}			
+			break;
+		}
+		case 4: case 6: case 9: case 11:{
+			if(max){ *max = 30; }
+			if(day >= 1 && day <= 30){
+				return 1;
+			}
+			break;
+		}
+		case 2:{
+			// check for a leap year
+			if(year
+				&& (*year%400 == 0 || (*year%4 == 0 && *year%100 != 0))){
+				// set leap year max
+				if(max){ *max = 29; }
+				if(day >= 1 && day <= 29){
+					return 1;
+				}
+			}
+			else{
+				// without year default is no leap year
+				if(day >= 1 && day <= 28){
+					if(max){ *max = 28; }
+					return 1;
+				}
+			}
+			break;
+		}
+		default:
+			break;
+		}
+		return 0;
+}
+
 
 void getDateFromLCD(int *month, int *day, int *year){
   if(!month || !day || !year){ return; }
   lcd.clear();
-  lcd.setCursor(0,0);
-  
-  lcd.setCursor(0,1);
-  lcd.print("00.00.00");
-  int tens_place = 0, ones_place = 0;
-  int i = 0;
-  while(i < 2){
-    lcd.setCursor(i, 1);
+  lcd.setCursor(0,0); 
+	char *format = "00.00.00";
+	*month = 1;
+	*day = 1;
+	*year = 18;
+  lcd.print(format);
+	int complete = 0;
+  while(!complete){
+		char *format = "%02d.00.00";
     if(buttonPressed(enterButtonPin, &enterButtonState)){
-      i++;
+      complete = 1;
     }
     else{
       if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 0 && tens_place + 1 <= 1){
-          tens_place++;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 1 && (ones_place + 1) <= 9
-                  && (tens_place * 10 + (ones_place + 1)) <= 12){
-            ones_place++;
-            lcd.write('0' + ones_place);
-        }
+				*month++;
+				if(*month > 12){
+					*month = 1;
+				}
       }
       if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 0 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
-        }
-        if(i == 1 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
-        }
+				*month--;
+				if(*month < 1){
+					*month = 12;
+				}
       }
     }
+		snprintf(buffer, 100, format, *month);
+		lcd.print(buffer);
   }
-  *month = tens_place * 10 + ones_place; 
-  tens_place = 0;
-  ones_place = 0;
+	complete = 0;
+	lcd.setCursor(3,0);
+	while(!complete){
+		char *format = "%02d.%02d.00";
+    if(buttonPressed(enterButtonPin, &enterButtonState)){
+      complete = 1;
+    }
+    else{
+      if(buttonPressed(upButtonPin, &upButtonState)){
+				*day++;
+				if(!validDate(*month, *day, NULL, NULL)){
+					*day = 1;
+				}
+			}
+      if(buttonPressed(downButtonPin, &downButtonState)){
+				int max;
+				*day--;
+				if(!validDate(*month, *day, NULL, &max)){
+					*day = max;
+				}
+      }
+    }
+		snprintf(buffer, 100, format, *month, *day);
+		lcd.print(buffer);
+	}
+	complete = 0;
+	lcd.setCursor(6, 0);
+	while(!complete){
+		char *format = "%02d.%02d.%02d";
+		if(buttonPressed(enterButtonPin, &enterButtonState)){
+			complete = 1;
+		}
+		else{
+			if(buttonPressed(upButtonPin, &upButtonState)){
+				int max;
+				*year++;
+				if(*year < 0){
+					*year = 0;
+				}
+				else{
+
+				}
+				if(!validDate(*month, *day, year, &max)){
+					// check if year is inside of range
+					if(*year > 2099){
+						*year = 2000;
+					}
+					// check if day is on leap year
+					if(*day > max){
+						// set day to the 29th on leap year
+						*day = max;
+					}
+				}
+				*year -= 2000;
+			}
+			if(buttonPressed(downButtonPin, &downButtonState)){
+			
+			}
+		}
+		snprintf(buffer, 100, format, *month, *day, *year);
+		lcd.print(buffer);
+	}
+	
+
+
+
+
+
+
+  *month = tensPlace * 10 + onesPlace; 
+  tensPlace = 0;
+  onesPlace = 0;
   i++;
   while(i < 5){
     lcd.setCursor(i, 1);
@@ -195,30 +273,30 @@ void getDateFromLCD(int *month, int *day, int *year){
     }
     else{
       if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 3 && tens_place + 1  <= 3){
-          tens_place++;
-          lcd.write('0' + tens_place);
+        if(i == 3 && tensPlace + 1  <= 3){
+          tensPlace++;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 4 && (tens_place * 10 + (ones_place + 1)) <= 31){
-          ones_place++;
-          lcd.write('0' + ones_place);
+        if(i == 4 && (tensPlace * 10 + (onesPlace + 1)) <= 31){
+          onesPlace++;
+          lcd.write('0' + onesPlace);
         }
       }
       if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 3 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
+        if(i == 3 && tensPlace - 1 >= 0){
+          tensPlace--;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 4 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
+        if(i == 4 && onesPlace - 1 >= 0){
+          onesPlace--;
+          lcd.write('0' + onesPlace);
         }
       }
     }
   }
-  *day = tens_place * 10 + ones_place; 
-  tens_place = 0;
-  ones_place = 0;
+  *day = tensPlace * 10 + onesPlace; 
+  tensPlace = 0;
+  onesPlace = 0;
   i++; 
   while(i < 8){
     lcd.setCursor(i, 1);
@@ -227,102 +305,102 @@ void getDateFromLCD(int *month, int *day, int *year){
     }
     else{
       if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 6 && tens_place + 1  <= 9){
-          tens_place++;
-          lcd.write('0' + tens_place);
+        if(i == 6 && tensPlace + 1  <= 9){
+          tensPlace++;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 7 && ones_place + 1 <= 9){
-          ones_place++;
-          lcd.write('0' + ones_place);
+        if(i == 7 && onesPlace + 1 <= 9){
+          onesPlace++;
+          lcd.write('0' + onesPlace);
         }
       }
       if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 6 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
+        if(i == 6 && tensPlace - 1 >= 0){
+          tensPlace--;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 7 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
+        if(i == 7 && onesPlace - 1 >= 0){
+          onesPlace--;
+          lcd.write('0' + onesPlace);
         }
       }
     }
   }
-  *year = tens_place * 10 + ones_place;
+  *year = tensPlace * 10 + onesPlace;
 }
 
 void getScheduleFromLCD(int *days, int *hours){
   if(!days || !hours){ return; }
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Enter schedule: 
+  lcd.print("Enter schedule:");
   lcd.setCursor(0,1);
   lcd.print("00:00");
-  int tens_place = 0, ones_place = 0;
+  int tensPlace = 0, onesPlace = 0;
   int i = 0;
   while(i < 2){
-    lcd.setCursor(i, 0);
+    lcd.setCursor(i,1);
     if(buttonPressed(enterButtonPin, &enterButtonState)){
       i++;
     }
     else{
       if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 0 && tens_place + 1 <= 3){
-          tens_place++;
-          lcd.write('0' + tens_place);
+        if(i == 0 && tensPlace + 1 <= 3){
+          tensPlace++;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 1 && (ones_place + 1) <= 9
-                  && (tens_place * 10 + (ones_place + 1)) <= 31){
-            ones_place++;
-            lcd.write('0' + ones_place);
+        if(i == 1 && (onesPlace + 1) <= 9
+                  && (tensPlace * 10 + (onesPlace + 1)) <= 31){
+            onesPlace++;
+            lcd.write('0' + onesPlace);
         }
       }
       if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 0 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
+        if(i == 0 && tensPlace - 1 >= 0){
+          tensPlace--;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 1 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
+        if(i == 1 && onesPlace - 1 >= 0){
+          onesPlace--;
+          lcd.write('0' + onesPlace);
         }
       }
     }
   }
-  *days = tens_place * 10 + ones_place; 
-  tens_place = 0;
-  ones_place = 0;
+  *days = tensPlace * 10 + onesPlace; 
+  tensPlace = 0;
+  onesPlace = 0;
   i++;
   while(i < 5){
-    lcd.setCursor(i, 0);
+    lcd.setCursor(i,1);
     if(buttonPressed(enterButtonPin, &enterButtonState)){
       i++;
     }
     else{
       if(buttonPressed(upButtonPin, &upButtonState)){
-        if(i == 3 && tens_place + 1  <= 2){
-          tens_place++;
-          lcd.write('0' + tens_place);
+        if(i == 3 && tensPlace + 1  <= 2){
+          tensPlace++;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 4 && ones_place + 1 <= 9
-                  && (tens_place * 10 + (ones_place + 1)) <= 23){
-          ones_place++;
-          lcd.write('0' + ones_place);
+        if(i == 4 && onesPlace + 1 <= 9
+                  && (tensPlace * 10 + (onesPlace + 1)) <= 23){
+          onesPlace++;
+          lcd.write('0' + onesPlace);
         }
       }
       if(buttonPressed(downButtonPin, &downButtonState)){
-        if(i == 3 && tens_place - 1 >= 0){
-          tens_place--;
-          lcd.write('0' + tens_place);
+        if(i == 3 && tensPlace - 1 >= 0){
+          tensPlace--;
+          lcd.write('0' + tensPlace);
         }
-        if(i == 4 && ones_place - 1 >= 0){
-          ones_place--;
-          lcd.write('0' + ones_place);
+        if(i == 4 && onesPlace - 1 >= 0){
+          onesPlace--;
+          lcd.write('0' + onesPlace);
         }
       }
     }
   }
-  *hours = tens_place * 10 + ones_place;
+  *hours = tensPlace * 10 + onesPlace;
 }
 
 void getUVThreshFromLCD(unsigned *uv_thresh){
