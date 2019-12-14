@@ -56,129 +56,129 @@ void getTimeFromLCD(int *hour, int *minute, int *second){
   *hour = 0;
   *minute = 0;
   *second = 0;
-	char buffer[50];
-	int complete = 0;
+  char buffer[50];
+  int complete = 0;
   // get the hours from the user
-	while(!complete){
+  while(!complete){
     lcd.setCursor(0,0);
-		char *format = "%02d:%02d:%02d";
-		if(buttonPressed(enterButtonPin, &enterButtonState)){
-			complete = 1;
-		}
-		else{
-			if(buttonPressed(upButtonPin, &upButtonState)){
+    char *format = "%02d:%02d:%02d";
+    if(buttonPressed(enterButtonPin, &enterButtonState)){
+      complete = 1;
+    }
+    else{
+      if(buttonPressed(upButtonPin, &upButtonState)){
         (*hour)++;
         // hours wrap back around
-				if(*hour > 23){
-					*hour = 0;
-				}
-			}
-			if(buttonPressed(downButtonPin, &downButtonState)){
+        if(*hour > 23){
+          *hour = 0;
+        }
+      }
+      if(buttonPressed(downButtonPin, &downButtonState)){
         (*hour)--;
-				if(*hour < 0){
-					*hour = 23;
-				}
-			}
-		}
-		snprintf(buffer, 50, format, *hour, *minute, *second);
-		lcd.print(buffer);
-	}
+        if(*hour < 0){
+          *hour = 23;
+        }
+      }
+    }
+    snprintf(buffer, 50, format, *hour, *minute, *second);
+    lcd.print(buffer);
+  }
   complete = 0;
   // get the minutes from the user
-	while(!complete){
+  while(!complete){
     lcd.setCursor(3,0);
     // drop the hour portion of the format for current lcd cursor position
-		char *format = "%02d:%02d";
-		if(buttonPressed(enterButtonPin, &enterButtonState)){
-			complete = 1;
-		}
-		else{
-			if(buttonPressed(upButtonPin, &upButtonState)){
+    char *format = "%02d:%02d";
+    if(buttonPressed(enterButtonPin, &enterButtonState)){
+      complete = 1;
+    }
+    else{
+      if(buttonPressed(upButtonPin, &upButtonState)){
         (*minute)++;
         // minutes wrap back around
-				if(*minute >= 59){
-					*minute = 0;
-				}
+        if(*minute >= 59){
+          *minute = 0;
+        }
       }
-			if(buttonPressed(downButtonPin, &downButtonState)){
+      if(buttonPressed(downButtonPin, &downButtonState)){
         (*minute)--;
-				if(*minute < 0){
-					*minute = 59;
-				}
-			}
-		}
-		snprintf(buffer, 50, format, *minute, *second);
-		lcd.print(buffer);
-	}
+        if(*minute < 0){
+          *minute = 59;
+        }
+      }
+    }
+    snprintf(buffer, 50, format, *minute, *second);
+    lcd.print(buffer);
+  }
   complete = 0;
   // get seconds from the user
-	while(!complete){
+  while(!complete){
     lcd.setCursor(6,0);
     // drop hour and minute portion of format for currrent lcd cursor position
-		char *format = "%02d";
-		if(buttonPressed(enterButtonPin, &enterButtonState)){
-			complete = 1;
-		}
-		else{
-			if(buttonPressed(upButtonPin, &upButtonState)){
+    char *format = "%02d";
+    if(buttonPressed(enterButtonPin, &enterButtonState)){
+      complete = 1;
+    }
+    else{
+      if(buttonPressed(upButtonPin, &upButtonState)){
         (*second)++;
         // seconds wrap back around
-				if(*second > 59){
-					*second = 0;
-				}
-			}
-			if(buttonPressed(downButtonPin, &downButtonState)){
+        if(*second > 59){
+          *second = 0;
+        }
+      }
+      if(buttonPressed(downButtonPin, &downButtonState)){
         (*second)--;
-				if(*second < 0){
-					*second = 59;
-				}
-			}
-		}
-		snprintf(buffer, 50, format, *second);
-		lcd.print(buffer);
-	}
+        if(*second < 0){
+          *second = 59;
+        }
+      }
+    }
+    snprintf(buffer, 50, format, *second);
+    lcd.print(buffer);
+  }
 }
 
 int validDate(int month, int day, int year, int *max){
-	switch(month){
-		case 1: case 3: case 5: case 7:
-		case 8: case 10: case 12:{
+  switch(month){
+    case 1: case 3: case 5: case 7:
+    case 8: case 10: case 12:{
       // set the max day of the month
-			if(max){ *max = 31; } 
-			if(day >= 1 && day <= 31){
-				return 1;
-			}			
-			break;
-		}
-		case 4: case 6: case 9: case 11:{
-			if(max){ *max = 30; }
-			if(day >= 1 && day <= 30){
-				return 1;
-			}
-			break;
-		}
-		case 2:{
-			// check for a leap year
-			if(year%400 == 0 || (year%4 == 0 && year%100 != 0)){
-				// set leap year max
-				if(max){ *max = 29; }
-				if(day >= 1 && day <= 29){
-					return 1;
-				}
-			}
-			else{
-				// default is no leap year
-				if(day >= 1 && day <= 28){
-					if(max){ *max = 28; }
-					return 1;
-				}
-			}
-			break;
-		}
-		default:
-			break;
-		}
-		return 0;
+      if(max){ *max = 31; } 
+      if(day >= 1 && day <= 31){
+        return 1;
+      }     
+      break;
+    }
+    case 4: case 6: case 9: case 11:{
+      if(max){ *max = 30; }
+      if(day >= 1 && day <= 30){
+        return 1;
+      }
+      break;
+    }
+    case 2:{
+      // check for a leap year
+      if(year%400 == 0 || (year%4 == 0 && year%100 != 0)){
+        // set leap year max
+        if(max){ *max = 29; }
+        if(day >= 1 && day <= 29){
+          return 1;
+        }
+      }
+      else{
+        // default is no leap year
+        if(day >= 1 && day <= 28){
+          if(max){ *max = 28; }
+          return 1;
+        }
+      }
+      break;
+    }
+    default:
+      break;
+    }
+    return 0;
 }
 
 /* This functions uses an lcd and two buttons as a user interface
@@ -190,36 +190,36 @@ void getDateFromLCD(int *month, int *day, int *year){
   lcd.setCursor(0,0); 
   lcd.print("00.00.00");
   // set default date to this year
-	*month = 4;
-	*day = 15;
-	*year = 18;
+  *month = 4;
+  *day = 15;
+  *year = 18;
   char buffer[50];
-	int complete = 0;
+  int complete = 0;
   // get the year from the user
   while(!complete){
     lcd.setCursor(0,0);
     char *format = "%02d.%02d.%02d";
-		if(buttonPressed(enterButtonPin, &enterButtonState)){
-		  complete = 1;
-		}
-		else{
-			if(buttonPressed(upButtonPin, &upButtonState)){
-				(*year)++;
+    if(buttonPressed(enterButtonPin, &enterButtonState)){
+      complete = 1;
+    }
+    else{
+      if(buttonPressed(upButtonPin, &upButtonState)){
+        (*year)++;
         // years wrap back around to 0 - 99
-				if(*year > 99){
-					*year = 0;
-				}
-			}
-			if(buttonPressed(downButtonPin, &downButtonState)){
-				(*year)--;
-				if(*year < 0){
-					*year = 99;
-				}
-			}
-		}
-		snprintf(buffer, 50, format, *year, *month, *day);
-		lcd.print(buffer);
-	}
+        if(*year > 99){
+          *year = 0;
+        }
+      }
+      if(buttonPressed(downButtonPin, &downButtonState)){
+        (*year)--;
+        if(*year < 0){
+          *year = 99;
+        }
+      }
+    }
+    snprintf(buffer, 50, format, *year, *month, *day);
+    lcd.print(buffer);
+  }
   complete = 0;
   // get the month from the user
   while(!complete){
@@ -231,25 +231,25 @@ void getDateFromLCD(int *month, int *day, int *year){
     }
     else{
       if(buttonPressed(upButtonPin, &upButtonState)){
-				(*month)++;
+        (*month)++;
         // months wrap back around
-				if(*month > 12){
-					*month = 1;
-				}
+        if(*month > 12){
+          *month = 1;
+        }
       }
       if(buttonPressed(downButtonPin, &downButtonState)){
-				(*month)--;
-				if(*month < 1){
-					*month = 12;
-				}
+        (*month)--;
+        if(*month < 1){
+          *month = 12;
+        }
       }
     }
-		snprintf(buffer, 50, format, *month, *day);
-		lcd.print(buffer);
+    snprintf(buffer, 50, format, *month, *day);
+    lcd.print(buffer);
   }
-	complete = 0;
+  complete = 0;
   // get the day from the user
-	while(!complete){
+  while(!complete){
     lcd.setCursor(6, 0);
     // year and month dropped from format
     char *format = "%02d";
@@ -258,25 +258,25 @@ void getDateFromLCD(int *month, int *day, int *year){
     }
     else{
       if(buttonPressed(upButtonPin, &upButtonState)){
-				(*day)++;
+        (*day)++;
         // days wrap back around to 1
-				if(!validDate(*month, *day, *year + 2000, NULL)){
-					*day = 1;
-				}
-			}
+        if(!validDate(*month, *day, *year + 2000, NULL)){
+          *day = 1;
+        }
+      }
       if(buttonPressed(downButtonPin, &downButtonState)){
-				int max;
-				(*day)--;
+        int max;
+        (*day)--;
         // days wrap back around to the max day for the given
         // year and month (includes leap years)
-				if(!validDate(*month, *day, *year + 2000, &max)){
-					*day = max;
-				}
+        if(!validDate(*month, *day, *year + 2000, &max)){
+          *day = max;
+        }
       }
     }
-		snprintf(buffer, 50, format, *day);
-		lcd.print(buffer);
-	}
+    snprintf(buffer, 50, format, *day);
+    lcd.print(buffer);
+  }
 }
 
 /* This function uses an lcd and two buttons to get the 
